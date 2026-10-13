@@ -98,8 +98,8 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 /* Combination Lab */
 #labShade{position:fixed;inset:0;z-index:60;background:rgba(12,6,2,.58);backdrop-filter:blur(3px);opacity:0;transition:opacity .24s ease}
 #labShade.open{opacity:1}
-#lab{position:fixed;z-index:61;top:0;right:0;height:100dvh;width:min(390px,94vw);padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 18px);display:flex;flex-direction:column;gap:13px;overflow-y:auto;background:linear-gradient(155deg,#4b2c18,#211208 72%);border-left:1px solid rgba(255,221,164,.35);box-shadow:-18px 0 48px #0009;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);visibility:hidden}
-#lab.open{transform:translateX(0);visibility:visible}
+#lab{position:fixed;z-index:61;top:0;right:0;height:100dvh;width:min(390px,94vw);padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 18px);display:flex;flex-direction:column;gap:13px;overflow-y:auto;background:linear-gradient(155deg,#4b2c18,#211208 72%);border-left:1px solid rgba(255,221,164,.35);box-shadow:-18px 0 48px #0009;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s;visibility:hidden}
+#lab.open{transform:translateX(0);visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s}
 .labHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .labEyebrow{font:9px 'Press Start 2P',monospace;letter-spacing:1px;color:#f5cb85;opacity:.9}
 #lab h2{font-size:19px;margin:5px 0 0;letter-spacing:.2px}
