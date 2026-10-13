@@ -63,7 +63,7 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 .t0{border:4px solid var(--c);border-radius:50%}.t1{background:var(--c);clip-path:polygon(50% 0,100% 100%,0 100%)}.t2{background:var(--c);border-radius:4px}
 @keyframes fl{from{transform:translateY(0) rotate(0)}to{transform:translateY(-26px) rotate(50deg)}}
 #roll{position:absolute;inset:0;pointer-events:none}
-.rb{position:absolute;left:-70px;width:50px;height:50px;display:grid;place-items:center;top:calc(22% + (var(--k) * 4px));will-change:transform,opacity;animation:roll 2.6s linear calc(var(--k)*.12s) both}
+.rb{position:absolute;left:-70px;width:50px;height:50px;display:grid;place-items:center;top:calc(8% + (var(--k) * 10.5%));will-change:transform,opacity;animation:roll 1.65s linear both}
 .rb .ball{width:100%;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--c),transparent 35%))}
 @keyframes roll{0%{transform:translateX(-80px) rotate(-180deg);opacity:1}96%{opacity:1}100%{transform:translateX(calc(100vw + 140px)) rotate(540deg);opacity:0}}
 .rb.swirling{left:calc(50% - 16px);top:calc(7% + 38px);width:32px;height:32px;opacity:0;animation:horizontal-vortex 4.8s linear calc(var(--k)*-.53s) infinite;--rx:calc(60px + (var(--k) * 7px))}
@@ -73,7 +73,7 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 #roll{z-index:1;overflow:hidden}
 #vortex{z-index:1}
 #logo,#hud,#sub,#coin,#cr,#play,#toLv,#foot{z-index:2}
-@media(max-width:420px){.rb{width:30px;height:30px;top:calc(20% + (var(--k) * 3px))}.rb.swirling{width:20px;height:20px;left:calc(50% - 10px);top:calc(8% + 28px);--rx:calc(42px + (var(--k) * 4px))}#vortex{top:8%;height:76px}}
+@media(max-width:420px){.rb{width:30px;height:30px;top:calc(8% + (var(--k) * 10.5%))}.rb.swirling{width:20px;height:20px;left:calc(50% - 10px);top:calc(8% + 28px);--rx:calc(42px + (var(--k) * 4px))}#vortex{top:8%;height:76px}}
 @media(prefers-reduced-motion:reduce){.rb.swirling{animation-duration:12s}.rb{animation-duration:3.25s}}
 #logo{display:flex;font-size:min(14vw,66px);font-weight:900;font-style:italic;position:relative;z-index:2}
 #logo span{display:inline-block;color:var(--c);text-shadow:0 0 12px var(--c),3px 3px 0 #000,-1px -1px 0 #fff6;animation:drop .8s cubic-bezier(.3,1.6,.5,1) calc(var(--k)*.12s + 1s) backwards,wob 1.8s ease-in-out calc(var(--k)*.12s + 2.2s) infinite alternate}
@@ -295,7 +295,7 @@ function applyConf(){document.body.classList.toggle('noconf',!conf);$('#cfl').te
 $('#cfl').onclick=()=>{conf=!conf;applyConf()};
 (function(){const sh=$('#shapes');for(let i=0;i<26;i++){const e=document.createElement('i'),s=3+(Math.random()*4|0)*2;e.className='sh t'+i%3;e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--c:${C[i%9][0]};width:${s}px;height:${s}px;animation-delay:${-Math.random()*5}s`;sh.appendChild(e)}
 $('#logo').innerHTML='COLORKU'.split('').map((l,k)=>`<span style="--c:${C[[0,1,2,4,5,6,8][k]][0]};--k:${k}">${l}</span>`).join('');
-let r='';for(let k=0;k<9;k++)r+=`<div class="rb" data-k="${k}" style="--k:${k};top:calc(22% + ${k*4}px);--rx:calc(60px + ${k*7}px)">${ball(k+1)}</div>`;$('#roll').innerHTML=r;$('#roll').querySelectorAll('.rb').forEach(e=>e.addEventListener('animationend',ev=>{if(ev.animationName==='roll'){e.classList.add('swirling');e.style.animationDelay='-'+(Number(e.dataset.k)*.53)+'s'}},{once:true}));const J=['NO QUARTERS NEEDED.','SAVE THE TRADITIONAL VERSION FOR SHABBAT.','WARNING: CAUSES "JUST ONE MORE LEVEL"',"IT'S SUDOKU BUT WITH VIBES",'80 LEVELS. ZERO CHILL.','NOBODY HAS BEATEN LEVEL 80. NOBODY HAS TRIED.','THE BALLS ARE NOT EDIBLE. WE CHECKED.',"TAPPING HARDER DOESN'T HELP. WE TRIED."],sb=$('#sub');let ji=0;const sj=()=>{sb.textContent=J[ji++%J.length]};sj();setInterval(sj,2800);let cc=0;$('#coin').onclick=()=>{cc++;$('#cr').textContent='CREDITS '+String(cc).padStart(2,'0');$('#coin').textContent=cc<2?'CREDIT ACCEPTED!':cc<5?'INSERT MORE COIN':cc<8?"OKAY STOP. IT'S FREE.":"YOU'RE JUST TAPPING NOW."}})();
+let r='';for(let k=0;k<9;k++)r+=`<div class="rb" data-k="${k}" style="--k:${k};top:calc(8% + ${k*10.5}%);--rx:calc(60px + ${k*7}px)">${ball(k+1)}</div>`;$('#roll').innerHTML=r;$('#roll').querySelectorAll('.rb').forEach(e=>e.addEventListener('animationend',ev=>{if(ev.animationName==='roll'){e.classList.add('swirling');e.style.animationDelay='-'+(Number(e.dataset.k)*.53)+'s'}},{once:true}));const J=['NO QUARTERS NEEDED.','SAVE THE TRADITIONAL VERSION FOR SHABBAT.','WARNING: CAUSES "JUST ONE MORE LEVEL"',"IT'S SUDOKU BUT WITH VIBES",'80 LEVELS. ZERO CHILL.','NOBODY HAS BEATEN LEVEL 80. NOBODY HAS TRIED.','THE BALLS ARE NOT EDIBLE. WE CHECKED.',"TAPPING HARDER DOESN'T HELP. WE TRIED."],sb=$('#sub');let ji=0;const sj=()=>{sb.textContent=J[ji++%J.length]};sj();setInterval(sj,2800);let cc=0;$('#coin').onclick=()=>{cc++;$('#cr').textContent='CREDITS '+String(cc).padStart(2,'0');$('#coin').textContent=cc<2?'CREDIT ACCEPTED!':cc<5?'INSERT MORE COIN':cc<8?"OKAY STOP. IT'S FREE.":"YOU'RE JUST TAPPING NOW."}})();
 try{conf=localStorage.getItem('ckuConf')!=='0'}catch(e){}applyConf();
 try{const s=JSON.parse(localStorage.getItem('cku'));if(s&&s.g&&s.level){g=s.g;given=s.given;notes=s.notes;sol=s.sol;level=s.level;done=s.done||{};render()}else newGame(1)}catch(e){newGame(1)}
 showScr('intro');
