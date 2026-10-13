@@ -277,7 +277,7 @@ function openPick(i,mode){sel=i;render();if(given[i])return;pk={i,mode,t:Date.no
  const r=els[i].getBoundingClientRect(),w=204,h=pickEl.offsetHeight;pickEl.style.left=Math.min(innerWidth-w-8,Math.max(8,r.left+r.width/2-w/2))+'px';
  let y=r.top-h-10;if(y<8)y=r.bottom+10;pickEl.style.top=y+'px'}
 pickEl.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b||!pk||Date.now()-pk.t<300)return;const v=+b.dataset.v,i=pk.i;
- if(pk.mode==='note'){if(v===0)closePick();else{note(i,v);drawPick()}}else{if(v===0){if(g[i]){snap();g[i]=0;render()}}else if(g[i]!==v)place(i,v);else place(i,v);closePick()}});
+ if(pk.mode==='note'){if(v===0)closePick();else{note(i,v);drawPick()}}else{if(v===0){if(g[i]){snap();g[i]=0;render()}}else{pick=v;if(g[i]!==v)place(i,v);else place(i,v);drawDock()}closePick()}});
 $('#back').addEventListener('pointerdown',closePick);
 
 let st=null;const board=$('#board');
