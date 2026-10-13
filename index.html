@@ -31,6 +31,9 @@ box-shadow:0 3px 4px rgba(0,0,0,.5),inset -3px -4px 6px rgba(0,0,0,.35)}
 .ball b{display:none;position:absolute;inset:0;place-items:center;font-size:14px;color:#fff;text-shadow:0 1px 2px #000}
 body.nums .ball b{display:grid}
 .given .ball{outline:2px solid rgba(255,225,140,.95);outline-offset:1px}
+.sparkle-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;border-radius:50%;background:var(--spark-color);z-index:5;pointer-events:none;box-shadow:0 0 2px var(--spark-color);animation:dot-burst 320ms ease-out forwards}
+@keyframes dot-burst{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}12%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.65)}}
+@media(prefers-reduced-motion:reduce){.sparkle-dot{animation-duration:120ms}}
 .notes{position:absolute;inset:10%;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;z-index:1;pointer-events:none}
 .notes i{width:68%;aspect-ratio:1;border-radius:50%;background:var(--c);box-shadow:0 1px 1px rgba(0,0,0,.5)}
 #bar{display:flex;gap:10px;margin-top:14px}
@@ -178,7 +181,16 @@ function newGame(L){level=L||level;let sd=level*7919+13;rnd=()=>{sd=sd+0x6D2B79F
  for(const i of shuf([...Array(81).keys()])){if(rem>=T)break;const v=g[i];g[i]=0;if(count(g,2)===1)rem++;else g[i]=v}
  given=g.map(v=>v>0);notes=Array(81).fill(0);hist=[];sel=-1;won=false;$('#win').hidden=true;rnd=Math.random;showScr('');render()}
 function snap(){hist.push({g:g.slice(),n:notes.slice()});if(hist.length>150)hist.shift()}
-function place(i,v){if(given[i])return;snap();if(g[i]===v)g[i]=0;else{g[i]=v;notes[i]=0;for(const p of P[i])notes[p]&=~(1<<v)}render()}
+function burstDots(i){
+ const cell=els[i],dots=[
+  [0,-25,'#ffe36a'],[10,-22,'#ffd84d'],[20,-12,'#ffdf57'],[24,1,'#ffe36a'],
+  [18,14,'#ffd84d'],[8,23,'#ffe36a'],[-6,24,'#ffdf57'],[-18,16,'#ffd84d'],
+  [-24,4,'#ffe36a'],[-21,-10,'#ffdf57'],[-13,-21,'#ffd84d'],[3,-15,'#55aaff'],
+  [17,5,'#4ca8ff'],[-15,8,'#ff78bd'],[7,18,'#ff78bd']
+ ];
+ for(const [dx,dy,color] of dots){const d=document.createElement('i');d.className='sparkle-dot';d.style.setProperty('--dx',dx+'px');d.style.setProperty('--dy',dy+'px');d.style.setProperty('--spark-color',color);cell.appendChild(d);d.addEventListener('animationend',()=>d.remove(),{once:true})}
+}
+function place(i,v){if(given[i])return;snap();let placed=false;if(g[i]===v)g[i]=0;else{g[i]=v;placed=true;notes[i]=0;for(const p of P[i])notes[p]&=~(1<<v)}render();if(placed)burstDots(i)}
 function note(i,v){if(given[i]||g[i])return;snap();notes[i]^=1<<v;render()}
 
 function labConflicts(board,i){return !!board[i]&&P[i].some(p=>board[p]===board[i])}
