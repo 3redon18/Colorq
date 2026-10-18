@@ -61,7 +61,7 @@ background:rgba(30,18,9,.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:b
 #pick .btn{grid-column:1/-1}
 #win{position:fixed;inset:0;z-index:40;background:rgba(20,10,4,.8);display:grid;place-items:center;align-content:center;gap:14px;text-align:center}
 #win h2{font-size:34px;margin:0}
-body.noconf .bad::after{display:none}
+body.noconf .bad:not(.wrong-answer)::after{display:none}
 header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 #lvl small{display:block;font-weight:400;opacity:.7;font-size:11px}
 .scr{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow:hidden;background:radial-gradient(circle at 50% 40%,#3b1a78,#12062e 70%)}
