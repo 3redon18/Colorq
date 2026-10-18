@@ -136,10 +136,14 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 #labClose{font-size:22px;line-height:1;width:38px;height:38px;padding:0;border-radius:50%}
 .labIntro{font-size:12px;line-height:1.45;color:#d8c0a1;margin:0}
 .labLabel{font-size:10px;letter-spacing:1.4px;color:#d4b18a;font-weight:800}
-#labBoard{width:min(100%,330px);aspect-ratio:1;align-self:center;display:grid;grid-template:repeat(9,1fr)/repeat(9,1fr);gap:2px;padding:7px;border-radius:12px;background:linear-gradient(135deg,#ecc890,#cf9f60);box-shadow:0 8px 20px #0006,inset 0 1px 2px #fff8}
-.labCell{min-width:0;min-height:0;position:relative;display:grid;place-items:center;border:0;border-radius:3px;padding:0;background:#7b4b20aa;touch-action:manipulation}
-.labCell:nth-child(3n){border-right:1px solid #603616}
-.labCell.selected{outline:2px solid #fff4b2;outline-offset:-1px;z-index:1;background:#f4dca2}
+#labBoard{width:min(100%,340px);aspect-ratio:1;align-self:center;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:2.6%;padding:3%;border-radius:12px;background:repeating-linear-gradient(90deg,rgba(120,70,30,.10) 0 2px,transparent 2px 9px),linear-gradient(135deg,#ecc890,#cf9f60);box-shadow:0 8px 20px #0006,inset 0 1px 2px #fff8}
+.labBox{min-width:0;min-height:0;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:4%;padding:4%;border-radius:7px;background:rgba(110,60,15,.22);box-shadow:inset 0 1px 3px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.35)}
+.labCell{min-width:0;min-height:0;position:relative;display:grid;place-items:center;border:0;border-radius:4px;padding:0;background:rgba(90,50,15,.32);touch-action:manipulation}
+.labMini{position:absolute;inset:2%;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;pointer-events:none}
+.labMini i{width:96%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7) 0,rgba(255,255,255,0) 35%),var(--c);box-shadow:0 1px 1px rgba(0,0,0,.5)}
+.labMini i.off{visibility:hidden}
+.labCell.multiLab{background:rgba(255,240,200,.18)}
+.labCell.selected{outline:2px solid #fff4b2;outline-offset:-1px;z-index:1;background:#f4dca2aa}
 .labCell.givenLab{background:#85582e}
 .labCell .ball{width:86%;box-shadow:0 1px 2px #0006}
 .labCell .ball b{font-size:clamp(5px,1.5vw,9px)}
@@ -173,9 +177,9 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
   <div class="labLabel">PRACTICE BOARD</div>
   <div id="labBoard" aria-label="Practice puzzle board"></div>
   <div id="labTarget"><span>Selected cell</span><strong id="labTargetText">Choose a cell</strong></div>
-  <div class="labLabel">TRY A COLOR</div>
+  <div class="labLabel">TRY COLORS <span style="opacity:.7;font-weight:400;letter-spacing:0">(tap several to see possibilities)</span></div>
   <div id="labPalette" aria-label="Test colors"></div>
-  <div id="labStatus" aria-live="polite">Select an empty cell, then try a color.</div>
+  <div id="labStatus" aria-live="polite">Select an empty spot, then tap colors to add or remove them.</div>
   <div class="labActions"><button class="btn" id="labReset">Reset trial</button><button class="btn" id="labApply">Apply trial</button></div>
   <p class="labHint">Swipe left or tap × to return to your puzzle.</p>
 </aside>
@@ -196,10 +200,13 @@ function fill(g){const[b,bm]=best(g);if(b<0)return true;for(const v of shuf([1,2
 
 let g,given,notes,sol,hist=[],sel=-1,pick=0,pk=null,won=false,level=1,done={},conf=true;
 let checkShown=false;const capDefault=$('#cap').textContent;
-let labOpen=false,labBoard=[],labSel=-1;
+let labOpen=false,labBoard=[],labStart=[],labSel=-1;
+const bits=m=>{let n=0;for(let x=m;x;x&=x-1)n++;return n};
+const onlyColor=m=>bits(m)===1?31-Math.clz32(m):0;
 const els=[],grid=$('#grid'),pickEl=$('#pick');
 const labEl=$('#lab'),labShade=$('#labShade'),labGrid=$('#labBoard'),labPalette=$('#labPalette');
-for(let i=0;i<81;i++){const b=document.createElement('button');b.type='button';b.className='labCell';b.dataset.i=i;b.setAttribute('aria-label',`Practice cell ${i+1}`);labGrid.appendChild(b);}
+const labEls=[];
+for(let bx=0;bx<9;bx++){const box=document.createElement('div');box.className='labBox';for(let k=0;k<9;k++){const i=((bx/3|0)*3+(k/3|0))*9+bx%3*3+k%3,b=document.createElement('button');b.type='button';b.className='labCell';b.dataset.i=i;b.setAttribute('aria-label',`Practice cell ${i+1}`);labEls[i]=b;box.appendChild(b)}labGrid.appendChild(box)}
 for(let v=1;v<=9;v++){const b=document.createElement('button');b.type='button';b.className='labColor';b.dataset.v=v;b.innerHTML=ball(v);b.setAttribute('aria-label',`Try color ${v}`);labPalette.appendChild(b);}
 for(let b=0;b<9;b++){const bx=document.createElement('div');bx.className='box';for(let k=0;k<9;k++){const i=((b/3|0)*3+(k/3|0))*9+b%3*3+k%3,c=document.createElement('div');c.className='cell';c.dataset.i=i;els[i]=c;bx.appendChild(c)}grid.appendChild(bx)}
 const dock=$('#dock');for(let v=1;v<=9;v++){const d=document.createElement('button');d.className='dk';d.innerHTML=ball(v);d.onclick=()=>{pick=pick===v?0:v;drawDock()};dock.appendChild(d)}
@@ -226,29 +233,37 @@ function burstDots(i){
 function place(i,v){if(given[i])return;snap();let placed=false;if(g[i]===v)g[i]=0;else{g[i]=v;placed=true;notes[i]=0;for(const p of P[i])notes[p]&=~(1<<v)}render();if(placed)burstDots(i)}
 function note(i,v){if(given[i]||g[i])return;snap();notes[i]^=1<<v;render()}
 
-function labConflicts(board,i){return !!board[i]&&P[i].some(p=>board[p]===board[i])}
+// only single-colour spots count as placed; several colours are just possibilities
+function labConflicts(board,i){const v=onlyColor(board[i]);return !!v&&P[i].some(p=>onlyColor(board[p])===v)}
+function labCellHTML(m){const v=onlyColor(m);if(v)return ball(v);if(!m)return'';let h='<div class="labMini">';for(let k=1;k<=9;k++)h+=m>>k&1?`<i style="--c:${C[k-1][0]}"></i>`:'<i class="off"></i>';return h+'</div>'}
+function labFromGame(){return g.map((v,i)=>v?1<<v:(notes[i]||0))}
 function renderLab(){
  if(!labOpen)return;
- let conflicts=0;
+ let conflicts=0,multi=0;
  for(let i=0;i<81;i++){
-  const b=labGrid.children[i],v=labBoard[i];
+  const b=labEls[i],m=labBoard[i],n=bits(m),bad=labConflicts(labBoard,i);
   b.classList.toggle('selected',i===labSel);
   b.classList.toggle('givenLab',!!given[i]);
-  b.classList.toggle('conflictLab',labConflicts(labBoard,i));
-  b.innerHTML=v?ball(v):'';
+  b.classList.toggle('conflictLab',bad);
+  b.classList.toggle('multiLab',n>1);
+  b.innerHTML=labCellHTML(m);
   b.disabled=!!given[i];
-  b.setAttribute('aria-label',`Practice cell ${i+1}${given[i]?', fixed':v?', color '+v:', empty'}`);
-  if(labConflicts(labBoard,i))conflicts++;
+  b.setAttribute('aria-label',`Practice cell ${i+1}${given[i]?', fixed':n===1?', color '+onlyColor(m):n?', '+n+' possible colors':', empty'}`);
+  if(bad)conflicts++;if(n>1&&!given[i])multi++;
  }
- [...labPalette.children].forEach((b,k)=>b.classList.toggle('active',labSel>=0&&labBoard[labSel]===k+1));
- $('#labTargetText').textContent=labSel<0?'Choose a cell':`Row ${(labSel/9|0)+1}, column ${labSel%9+1}`;
+ const selMask=labSel>=0?labBoard[labSel]:0;
+ [...labPalette.children].forEach((b,k)=>b.classList.toggle('active',!!(selMask>>(k+1)&1)));
+ const n=bits(selMask);
+ $('#labTargetText').textContent=labSel<0?'Choose a cell':`Row ${(labSel/9|0)+1}, column ${labSel%9+1}`+(given[labSel]?' (fixed)':n>1?` · ${n} colors`:'');
  const status=$('#labStatus');
  status.classList.toggle('warn',conflicts>0);
- status.textContent=conflicts? `${conflicts} conflicting placement${conflicts===1?'':'s'} highlighted. Try another color.` : 'No conflicts detected in this trial.';
- $('#labApply').disabled=conflicts>0||labBoard.every((v,i)=>v===g[i]);
+ status.textContent=conflicts? `${conflicts} conflicting placement${conflicts===1?'':'s'} highlighted. Try another color.`
+  : multi? `No conflicts. ${multi} spot${multi===1?' has':'s have'} several possible colors (they become notes when applied).`
+  : 'No conflicts detected in this trial.';
+ $('#labApply').disabled=conflicts>0||labBoard.every((m,i)=>m===labStart[i]);
 }
 function openLab(i=sel){
- closePick();labBoard=g.slice();labSel=typeof i==='number'&&i>=0?i:-1;labOpen=true;
+ closePick();labBoard=labFromGame();labStart=labBoard.slice();labSel=typeof i==='number'&&i>=0?i:-1;labOpen=true;
  labShade.hidden=false;labEl.classList.add('open');labShade.classList.add('open');labEl.setAttribute('aria-hidden','false');
  renderLab();
 }
@@ -258,11 +273,11 @@ function closeLab(){
 }
 $('#labClose').onclick=closeLab;$('#labOpenBtn').onclick=()=>openLab(sel);labShade.addEventListener('click',closeLab);
 labGrid.addEventListener('click',e=>{const b=e.target.closest('.labCell');if(!b)return;labSel=+b.dataset.i;renderLab()});
-labPalette.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b||labSel<0||given[labSel])return;labBoard[labSel]=+b.dataset.v;renderLab()});
-$('#labReset').onclick=()=>{labBoard=g.slice();renderLab()};
+labPalette.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b||labSel<0||given[labSel])return;labBoard[labSel]^=1<<+b.dataset.v;renderLab()});
+$('#labReset').onclick=()=>{labBoard=labStart.slice();renderLab()};
 $('#labApply').onclick=()=>{
  if(!labOpen||$('#labApply').disabled)return;
- snap();g=labBoard.slice();notes=notes.map((n,i)=>g[i]?0:n);won=false;$('#win').hidden=true;closeLab();render();
+ snap();for(let i=0;i<81;i++){if(given[i])continue;const m=labBoard[i],v=onlyColor(m);g[i]=v;notes[i]=v?0:m}won=false;$('#win').hidden=true;closeLab();render();
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&labOpen)closeLab()});
 let labTouchX=null;
