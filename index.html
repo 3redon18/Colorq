@@ -25,7 +25,7 @@ box-shadow:0 14px 30px rgba(0,0,0,.6),inset 0 2px 2px rgba(255,255,255,.5),inset
 .cell::before{content:"";position:absolute;width:72%;aspect-ratio:1;border-radius:50%;background:rgba(90,50,15,.35);box-shadow:inset 0 2px 3px rgba(0,0,0,.45)}
 .pe{background:rgba(70,35,5,.2)}.se{background:rgba(70,35,5,.42)}
 .bad::after{content:"";position:absolute;width:92%;aspect-ratio:1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #f33;z-index:3;pointer-events:none}
-.cell.wrong-answer::after{content:"";position:absolute;width:92%;aspect-ratio:1;border-radius:50%;border:3px solid #ff3030;box-shadow:0 0 10px rgba(255,48,48,.85);z-index:4;pointer-events:none}
+.cell.wrong-answer::after{content:"";position:absolute;width:92%;aspect-ratio:1;border-radius:50%;border:3px solid #ff3030!important;box-shadow:0 0 10px rgba(255,48,48,.85);z-index:6;pointer-events:none}
 .ball{display:block;position:relative;z-index:1;width:88%;aspect-ratio:1;border-radius:50%;pointer-events:none;
 background:radial-gradient(circle at 33% 27%,rgba(255,255,255,.85) 0,rgba(255,255,255,0) 26%),radial-gradient(circle at 38% 34%,var(--c),var(--d) 100%);
 box-shadow:0 3px 4px rgba(0,0,0,.5),inset -3px -4px 6px rgba(0,0,0,.35)}
@@ -265,7 +265,7 @@ labEl.addEventListener('touchstart',e=>{labTouchX=e.touches[0].clientX},{passive
 labEl.addEventListener('touchend',e=>{if(labTouchX!==null&&labTouchX-e.changedTouches[0].clientX>80)closeLab();labTouchX=null},{passive:true});
 
 function render(){let bad=0,full=true,wrongCount=0;
- for(let i=0;i<81;i++){const c=els[i],v=g[i],b=v&&P[i].some(p=>g[p]===v),wrong=!!(checkShown&&v&&!given[i]&&sol&&v!==sol[i]);if(!v)full=false;if(b)bad++;if(wrong)wrongCount++;
+ for(let i=0;i<81;i++){const c=els[i],v=g[i],b=v&&P[i].some(p=>g[p]===v),wrong=!!(checkShown&&v&&!given[i]&&Array.isArray(sol)&&sol.length===81&&v!==sol[i]);if(!v)full=false;if(b)bad++;if(wrong)wrongCount++;
   c.className='cell'+(sel>=0&&P[sel].includes(i)?' pe':'')+(i===sel?' se':'')+(given[i]?' given':'')+(b?' bad':'')+(wrong?' wrong-answer':'');
   if(v)c.innerHTML=ball(v);else if(notes[i]){let h='<div class="notes">';for(let k=1;k<=9;k++)h+=notes[i]>>k&1?`<i style="--c:${C[k-1][0]}"></i>`:'<i style="visibility:hidden"></i>';c.innerHTML=h+'</div>'}else c.innerHTML=''}
  if(full&&!bad&&!won){won=true;done[level]=1;$('#win').hidden=false;$('#next').hidden=level>=80}
@@ -295,7 +295,17 @@ board.addEventListener('pointercancel',()=>{if(st)clearTimeout(st.tm);st=null});
 $('#undo').onclick=()=>{const h=hist.pop();if(h){g=h.g;notes=h.n;won=false;$('#win').hidden=true;render()}};
 $('#erase').onclick=()=>{if(sel>=0&&!given[sel]&&(g[sel]||notes[sel])){snap();g[sel]=0;notes[sel]=0;render()}};
 $('#nums').onclick=()=>document.body.classList.toggle('nums');
-$('#check').onclick=()=>{checkShown=!checkShown;render()};
+$('#check').onclick=()=>{
+ checkShown=!checkShown;
+ if(checkShown&&(!Array.isArray(sol)||sol.length!==81||sol.some(v=>!v))){
+  const candidate=Array.isArray(g)&&g.length===81?g.slice():Array(81).fill(0);
+  for(let i=0;i<81;i++)if(given[i])candidate[i]=g[i];
+  const savedRnd=rnd;rnd=Math.random;
+  if(count(candidate,2)===1){sol=candidate.slice()}else if(fill(candidate)){sol=candidate.slice()}else{sol=null}
+  rnd=savedRnd;
+ }
+ render();
+};
 const tier=l=>l<=20?'Easy':l<=40?'Medium':l<=60?'Hard':'Expert',TC={Easy:'#4cd964',Medium:'#ffd23f',Hard:'#ff9500',Expert:'#ff3b30'};
 function showScr(n){$('#intro').hidden=n!=='intro';$('#levels').hidden=n!=='levels';if(n==='levels')buildLevels()}
 function buildLevels(){let h='';for(let n=1;n<=80;n++)h+=`<button class="lv${n===level?' cur':''}" data-n="${n}" style="--t:${TC[tier(n)]}">${n}${done[n]?'<em>✓</em>':''}</button>`;$('#lg').innerHTML=h}
