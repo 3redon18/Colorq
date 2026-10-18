@@ -25,6 +25,7 @@ box-shadow:0 14px 30px rgba(0,0,0,.6),inset 0 2px 2px rgba(255,255,255,.5),inset
 .cell::before{content:"";position:absolute;width:72%;aspect-ratio:1;border-radius:50%;background:rgba(90,50,15,.35);box-shadow:inset 0 2px 3px rgba(0,0,0,.45)}
 .pe{background:rgba(70,35,5,.2)}.se{background:rgba(70,35,5,.42)}
 .bad::after{content:"";position:absolute;width:92%;aspect-ratio:1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #f33;z-index:3;pointer-events:none}
+.cell.wrong-answer::after{content:"";position:absolute;width:92%;aspect-ratio:1;border-radius:50%;border:3px solid #ffdf57;box-shadow:0 0 0 2px rgba(255,60,40,.8),0 0 12px #ff3b30;z-index:4;pointer-events:none}
 .ball{display:block;position:relative;z-index:1;width:88%;aspect-ratio:1;border-radius:50%;pointer-events:none;
 background:radial-gradient(circle at 33% 27%,rgba(255,255,255,.85) 0,rgba(255,255,255,0) 26%),radial-gradient(circle at 38% 34%,var(--c),var(--d) 100%);
 box-shadow:0 3px 4px rgba(0,0,0,.5),inset -3px -4px 6px rgba(0,0,0,.35)}
@@ -155,7 +156,7 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 </style></head><body>
 <header><button class="btn" id="home">Levels</button><div id="lvl"></div><button class="btn labLaunch" id="labOpenBtn" aria-label="Open Combination Lab">✦ Lab</button><button class="btn" id="cfl">Conflicts: On</button></header>
 <div id="board"><div id="grid"></div></div>
-<div id="bar"><button class="btn" id="undo">Undo</button><button class="btn" id="erase">Erase</button><button class="btn" id="nums">123</button></div>
+<div id="bar"><button class="btn" id="undo">Undo</button><button class="btn" id="erase">Erase</button><button class="btn" id="nums">123</button><button class="btn" id="check">Check</button></div>
 <div id="cap">Tap a spot to highlight it · hold to place · tap ✦ Lab to experiment · or pick a color below first</div>
 <div id="dock"></div>
 <div id="back" hidden></div><div id="pick" hidden></div>
@@ -189,6 +190,7 @@ function count(g,lim){const[b,bm]=best(g);if(b<0)return 1;let t=0;for(let v=1;v<
 function fill(g){const[b,bm]=best(g);if(b<0)return true;for(const v of shuf([1,2,3,4,5,6,7,8,9].filter(v=>bm>>v&1))){g[b]=v;if(fill(g))return true}g[b]=0;return false}
 
 let g,given,notes,sol,hist=[],sel=-1,pick=0,pk=null,won=false,level=1,done={},conf=true;
+let checkShown=false;const capDefault=$('#cap').textContent;
 let labOpen=false,labBoard=[],labSel=-1;
 const els=[],grid=$('#grid'),pickEl=$('#pick');
 const labEl=$('#lab'),labShade=$('#labShade'),labGrid=$('#labBoard'),labPalette=$('#labPalette');
@@ -262,12 +264,12 @@ let labTouchX=null;
 labEl.addEventListener('touchstart',e=>{labTouchX=e.touches[0].clientX},{passive:true});
 labEl.addEventListener('touchend',e=>{if(labTouchX!==null&&labTouchX-e.changedTouches[0].clientX>80)closeLab();labTouchX=null},{passive:true});
 
-function render(){let bad=0,full=true;
- for(let i=0;i<81;i++){const c=els[i],v=g[i],b=v&&P[i].some(p=>g[p]===v);if(!v)full=false;if(b)bad++;
-  c.className='cell'+(sel>=0&&P[sel].includes(i)?' pe':'')+(i===sel?' se':'')+(given[i]?' given':'')+(b?' bad':'');
+function render(){let bad=0,full=true,wrongCount=0;
+ for(let i=0;i<81;i++){const c=els[i],v=g[i],b=v&&P[i].some(p=>g[p]===v),wrong=!!(checkShown&&v&&!given[i]&&sol&&v!==sol[i]);if(!v)full=false;if(b)bad++;if(wrong)wrongCount++;
+  c.className='cell'+(sel>=0&&P[sel].includes(i)?' pe':'')+(i===sel?' se':'')+(given[i]?' given':'')+(b?' bad':'')+(wrong?' wrong-answer':'');
   if(v)c.innerHTML=ball(v);else if(notes[i]){let h='<div class="notes">';for(let k=1;k<=9;k++)h+=notes[i]>>k&1?`<i style="--c:${C[k-1][0]}"></i>`:'<i style="visibility:hidden"></i>';c.innerHTML=h+'</div>'}else c.innerHTML=''}
  if(full&&!bad&&!won){won=true;done[level]=1;$('#win').hidden=false;$('#next').hidden=level>=80}
- $('#lvl').innerHTML=`Level ${level}<small>${tier(level)}</small>`;drawDock();try{localStorage.setItem('cku',JSON.stringify({g,given,notes,sol,level,done}))}catch(e){}}
+ $('#lvl').innerHTML=`Level ${level}<small>${tier(level)}</small>`;drawDock();$('#check').textContent=checkShown?'Hide check':'Check';$('#cap').textContent=checkShown?(wrongCount?`${wrongCount} incorrect placement${wrongCount===1?'':'s'} highlighted in yellow.`:'No incorrect placements found. Every filled ball matches the solution so far.') : capDefault;try{localStorage.setItem('cku',JSON.stringify({g,given,notes,sol,level,done}))}catch(e){}}
 
 function closePick(){pk=null;pickEl.hidden=true;$('#back').hidden=true}
 function drawPick(){const i=pk.i,note=pk.mode==='note';let h=`<small>${note?'Notes: tap colors to toggle':'Place a ball'}</small>`;
@@ -293,6 +295,7 @@ board.addEventListener('pointercancel',()=>{if(st)clearTimeout(st.tm);st=null});
 $('#undo').onclick=()=>{const h=hist.pop();if(h){g=h.g;notes=h.n;won=false;$('#win').hidden=true;render()}};
 $('#erase').onclick=()=>{if(sel>=0&&!given[sel]&&(g[sel]||notes[sel])){snap();g[sel]=0;notes[sel]=0;render()}};
 $('#nums').onclick=()=>document.body.classList.toggle('nums');
+$('#check').onclick=()=>{checkShown=!checkShown;render()};
 const tier=l=>l<=20?'Easy':l<=40?'Medium':l<=60?'Hard':'Expert',TC={Easy:'#4cd964',Medium:'#ffd23f',Hard:'#ff9500',Expert:'#ff3b30'};
 function showScr(n){$('#intro').hidden=n!=='intro';$('#levels').hidden=n!=='levels';if(n==='levels')buildLevels()}
 function buildLevels(){let h='';for(let n=1;n<=80;n++)h+=`<button class="lv${n===level?' cur':''}" data-n="${n}" style="--t:${TC[tier(n)]}">${n}${done[n]?'<em>✓</em>':''}</button>`;$('#lg').innerHTML=h}
