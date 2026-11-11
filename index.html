@@ -200,7 +200,7 @@ function fill(g){const[b,bm]=best(g);if(b<0)return true;for(const v of shuf([1,2
 
 let g,given,notes,sol,hist=[],sel=-1,pick=0,pk=null,won=false,level=1,done={},conf=true;
 let checkShown=false;const capDefault=$('#cap').textContent;
-let labOpen=false,labBoard=[],labStart=[],labSel=-1;
+let labOpen=false,labBoard=[],labStart=[],labReal=[],labSel=-1;
 const bits=m=>{let n=0;for(let x=m;x;x&=x-1)n++;return n};
 const onlyColor=m=>bits(m)===1?31-Math.clz32(m):0;
 const els=[],grid=$('#grid'),pickEl=$('#pick');
@@ -233,10 +233,11 @@ function burstDots(i){
 function place(i,v){if(given[i])return;snap();let placed=false;if(g[i]===v)g[i]=0;else{g[i]=v;placed=true;notes[i]=0;for(const p of P[i])notes[p]&=~(1<<v)}render();if(placed)burstDots(i)}
 function note(i,v){if(given[i]||g[i])return;snap();notes[i]^=1<<v;render()}
 
-// only single-colour spots count as placed; several colours are just possibilities
+// real balls from the puzzle stay big; every colour you try in the Lab shows small, so there's room for more
+const labIsReal=i=>!!labReal[i]&&labBoard[i]===labStart[i];
 function labConflicts(board,i){const v=onlyColor(board[i]);return !!v&&P[i].some(p=>onlyColor(board[p])===v)}
-function labCellHTML(m){const v=onlyColor(m);if(v)return ball(v);if(!m)return'';let h='<div class="labMini">';for(let k=1;k<=9;k++)h+=m>>k&1?`<i style="--c:${C[k-1][0]}"></i>`:'<i class="off"></i>';return h+'</div>'}
-function labFromGame(){return g.map((v,i)=>v?1<<v:(notes[i]||0))}
+function labCellHTML(m,real){const v=onlyColor(m);if(v&&real)return ball(v);if(!m)return'';let h='<div class="labMini">';for(let k=1;k<=9;k++)h+=m>>k&1?`<i style="--c:${C[k-1][0]}"></i>`:'<i class="off"></i>';return h+'</div>'}
+function labFromGame(){labReal=g.map(v=>!!v);return g.map((v,i)=>v?1<<v:(notes[i]||0))}
 function renderLab(){
  if(!labOpen)return;
  let conflicts=0,multi=0;
@@ -246,10 +247,10 @@ function renderLab(){
   b.classList.toggle('givenLab',!!given[i]);
   b.classList.toggle('conflictLab',bad);
   b.classList.toggle('multiLab',n>1);
-  b.innerHTML=labCellHTML(m);
+  b.innerHTML=labCellHTML(m,labIsReal(i));
   b.disabled=!!given[i];
   b.setAttribute('aria-label',`Practice cell ${i+1}${given[i]?', fixed':n===1?', color '+onlyColor(m):n?', '+n+' possible colors':', empty'}`);
-  if(bad)conflicts++;if(n>1&&!given[i])multi++;
+  if(bad)conflicts++;if(n&&!given[i]&&!labIsReal(i))multi++;
  }
  const selMask=labSel>=0?labBoard[labSel]:0;
  [...labPalette.children].forEach((b,k)=>b.classList.toggle('active',!!(selMask>>(k+1)&1)));
@@ -258,7 +259,7 @@ function renderLab(){
  const status=$('#labStatus');
  status.classList.toggle('warn',conflicts>0);
  status.textContent=conflicts? `${conflicts} conflicting placement${conflicts===1?'':'s'} highlighted. Try another color.`
-  : multi? `No conflicts. ${multi} spot${multi===1?' has':'s have'} several possible colors (they become notes when applied).`
+  : multi? `No conflicts. ${multi} spot${multi===1?' has':'s have'} trial colors (they become notes when applied).`
   : 'No conflicts detected in this trial.';
  $('#labApply').disabled=conflicts>0||labBoard.every((m,i)=>m===labStart[i]);
 }
@@ -277,7 +278,7 @@ labPalette.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(
 $('#labReset').onclick=()=>{labBoard=labStart.slice();renderLab()};
 $('#labApply').onclick=()=>{
  if(!labOpen||$('#labApply').disabled)return;
- snap();for(let i=0;i<81;i++){if(given[i])continue;const m=labBoard[i],v=onlyColor(m);g[i]=v;notes[i]=v?0:m}won=false;$('#win').hidden=true;closeLab();render();
+ snap();for(let i=0;i<81;i++){if(given[i]||labIsReal(i))continue;g[i]=0;notes[i]=labBoard[i]}won=false;$('#win').hidden=true;closeLab();render();
 };
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&labOpen)closeLab()});
 let labTouchX=null;
