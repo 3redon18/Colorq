@@ -198,8 +198,8 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 </aside>
 
 <div id="win" hidden><h2>Solved! 🎉</h2><button class="btn" id="next">Next level</button><button class="btn" id="again">Levels</button></div>
-<div id="levels" class="scr" hidden><h2>Choose a level</h2><p>Level 1 is the easiest. Level 80 is the hardest.<br>The higher the number, the fewer starting balls.</p><div id="leg"><span style="--t:#4cd964">1–20 Easy</span><span style="--t:#ffd23f">21–40 Medium</span><span style="--t:#ff9500">41–60 Hard</span><span style="--t:#ff3b30">61–80 Expert</span></div><div id="lg"></div><button class="btn" id="back2">Back to game</button></div>
-<div id="intro" class="scr"><div id="floor"></div><div id="shapes"></div><div id="roll"></div><div id="hud"><span>1UP 000000</span><span>HI-SCORE 999999</span></div><div id="confetti"></div><div id="banner"><b>★</b> ALL 80 LEVELS CLEARED <b>★</b></div><div id="logo"></div><div id="medal"></div><div id="sub"></div><div id="coin">INSERT COIN</div><div id="cr">CREDITS 00</div><button class="big" id="play">PRESS START</button><button class="btn" id="toLv">LEVEL SELECT</button><div id="foot">Fangame By 3redon<br><span style="font-size:7px">Made for Yaira</span></div><div id="torah-easter"><div class="message">88 CREDITS?! MY FRIEND, YOU HAVE OFFICIALLY RUN OUT OF EXCUSES.<br><br>THAT'S A LOT OF TIME TO SPEND CLICKING VIRTUAL COINS. GO DO SOMETHING PRODUCTIVE — LEARN SOME TORAH!</div><a href="https://www.chabad.org/" target="_blank" rel="noopener noreferrer">CLICK HERE TO LEARN TORAH AT CHABAD.ORG</a></div></div>
+<div id="levels" class="scr" hidden><h2>Choose a level</h2><p>Level 1 is the easiest. Level 160 is the hardest.<br>The higher the number, the harder the puzzle.</p><div id="leg"><span style="--t:#4cd964">1–20 Easy</span><span style="--t:#ffd23f">21–40 Medium</span><span style="--t:#ff9500">41–60 Hard</span><span style="--t:#ff3b30">61–80 Expert</span><span style="--t:#bf5af2">81–100 Master</span><span style="--t:#5ac8fa">101–120 Grandmaster</span><span style="--t:#ff2d95">121–140 Legend</span><span style="--t:#f5f5f7">141–160 Impossible</span></div><div id="lg"></div><button class="btn" id="back2">Back to game</button></div>
+<div id="intro" class="scr"><div id="floor"></div><div id="shapes"></div><div id="roll"></div><div id="hud"><span>1UP 000000</span><span>HI-SCORE 999999</span></div><div id="confetti"></div><div id="banner"><b>★</b> LEVEL 80 CLEARED <b>★</b></div><div id="logo"></div><div id="medal"></div><div id="sub"></div><div id="coin">INSERT COIN</div><div id="cr">CREDITS 00</div><button class="big" id="play">PRESS START</button><button class="btn" id="toLv">LEVEL SELECT</button><div id="foot">Fangame By 3redon<br><span style="font-size:7px">Made for Yaira</span></div><div id="torah-easter"><div class="message">88 CREDITS?! MY FRIEND, YOU HAVE OFFICIALLY RUN OUT OF EXCUSES.<br><br>THAT'S A LOT OF TIME TO SPEND CLICKING VIRTUAL COINS. GO DO SOMETHING PRODUCTIVE — LEARN SOME TORAH!</div><a href="https://www.chabad.org/" target="_blank" rel="noopener noreferrer">CLICK HERE TO LEARN TORAH AT CHABAD.ORG</a></div></div>
 <script>
 const $=s=>document.querySelector(s);
 const C=[['#e8262c','#8a0d12'],['#f7931e','#a8520a'],['#f7e017','#a38c05'],['#a6d632','#5d8a10'],['#139a4a','#064a22'],['#7cc4f0','#3a7fb0'],['#2a5ae0','#0f2a85'],['#e4aaf0','#a566b8'],['#7a2fa3','#3c0f58']];
@@ -225,8 +225,92 @@ for(let b=0;b<9;b++){const bx=document.createElement('div');bx.className='box';f
 const dock=$('#dock');for(let v=1;v<=9;v++){const d=document.createElement('button');d.className='dk';d.innerHTML=ball(v);d.onclick=()=>{pick=pick===v?0:v;drawDock()};dock.appendChild(d)}
 const drawDock=()=>[...dock.children].forEach((d,k)=>{const v=k+1,needed=Array.isArray(sol)&&Array.isArray(g)&&sol.some((answer,i)=>answer===v&&g[i]!==v);d.hidden=!needed;d.classList.toggle('on',pick===v&&needed);d.setAttribute('aria-label',`Color ${v}${needed?'':' complete'}`);if(!needed&&pick===v)pick=0});
 
-function newGame(L){level=L||level;let sd=level*7919+13;rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};sol=Array(81).fill(0);fill(sol);g=sol.slice();let rem=0;const T=30+Math.round((level-1)*26/79);
- for(const i of shuf([...Array(81).keys()])){if(rem>=T)break;const v=g[i];g[i]=0;if(count(g,2)===1)rem++;else g[i]=v}
+// Levels 81-160: hand-picked from rated research collections (Denis Berthier's controlled-bias
+// and "eleven" sets, github.com/denis-berthier). Sudoku Explainer rating climbs from 2.8 (level 81,
+// ~7% above level 80's 2.6) to 11.9 (level 160), the highest rating any known puzzle has.
+const XL=[
+'.......8..571..........2..5.8...3.9..4.7..8....6.2.3...3..6.9.....59.1.2..5..4...',
+'...4.6......78.....8.2.1546.........6....5.9....9..3.5.....2..7..2.9.86...1....53',
+'..3.567..4...8.......2...51271.....4.9......26....139.5..79..4.7.........46......',
+'...4..7.9.....9...68......5...87.6.....2......156.....5.....37...256.........18..',
+'.234..........9..6.8....14..48....1.5.62..4.......3...3...7..5..7..95....6.8..3..',
+'....5..8....1.9.3..9..72..4..9........19.5..283.....47.16..4...57....6.........7.',
+'1...5...9.5..8.....8.723..5..6..84.1....9.8...1.....6...2.6....5..2..........73..',
+'.2..56.8.4......3..8...2.462.....9...97.6.1.4....1..7...2...8..8....3...9...4....',
+'..3.....9...1..2..8.9...5...........7..6.8.4.94.52.8....8.......7.3.2.6..1..4.3..',
+'..345..89.567..1.....2..6..21..........9......75.34.............67..1.4.....9.5.6',
+'........94...8.....89.7...12.589.1..37....9.....73..625.6...4..7.256.....3.......',
+'....567.....18...6...3...4..7.9....5..1...8..9...2..7..1.7946....5...32.84.......',
+'1...5..8..57.8...6.9...3.....46..9.5...2..3....9..1.4..7......1.12.......4.3...7.',
+'...4.6.....7.......9..73.1.24...8.....8.15.72.7..2.9.......71.........95.3.6..8.7',
+'...4..7.9.5.7....3.......6.2...738....7......54.61........2.4..83.5.....9.2.6....',
+'1...567...5...923......7.5.2.....4.83.1.......4..9..........8..63..75...7.8.6..4.',
+'1...56....5...92.3.9....5...6...3...3.....9..9...1...8..47...2.6.9.4..5.78..3.4..',
+'1234.....4...891..7....3....4....85..6...5....3...82.7......5....8.3...1...57..2.',
+'..34.6......78..2..98......2..59.6............678...35...67...25....8.4...9.4...7',
+'....5..8.4.71.92....9..3......3.....7....8.4.961..487.......69....762.........4.7',
+'.....6.8..5.7..1......3..462.85.....36....4.8.7..1....53.....2.61.2...9...2.7....',
+'....56.8..571....6...........13...953.........7.8...2.5327..9....6.1..4.8...9..7.',
+'..34......5...92..6..7.3...2.4....68.....8..25.....19.....94...83.6...7.9.5.3....',
+'.2.......4....9.3.6.8.....5249.15.....5..264...1..3...51..7.8..7.2.....4...3.1..7',
+'..3..6...4..18..3.8....3..5...76.8.1..1.9..2...........4...29....2.3.....96.48.12',
+'1.3.......5....1...98.3.5...8..7........1489...45...1.5......36.1..9..7....6..2..',
+'........945..8....7..1...6......59...17.48..5.9..2.3..6.1........2..1..7.4....8..',
+'..3.....9457.8....6....2....3.6...78......5.....8.7..2...96..5...83..621.4......3',
+'1..........7..92...8.2..5.423.5..9.1..5......91..3.......7....5...3.1.2.84.6..3..',
+'1..4...8.4.7.....6.6..2.....7.94..6.3.8..1.......35..2.1.....27732...5........61.',
+'.23.5...9......1..7......4...416..5...59..813..8..........9.......8.23......7.294',
+'..3...7.945.....3...9.....5....681...76.41.......2..6.34.8...91..1..4...79...2..4',
+'...45....4.67...2.7......6......1.3.....27......9..257.61...945.8.......9..3....8',
+'123........7.......8..7314.2.1.6.5...36..1..4......2......18.9.8...9.......347.6.',
+'..3...78...6...1...9.2..5....79..3..3..16......132....5...1...8614....7.....74...',
+'......7.9...18..3......3.4.2..7...1...96.4.....48........9..12..7..4..939.1..785.',
+'.2..5...9..718...36..7...41.7.3..1..365........1.........9..472...5.3.......279..',
+'.23......4.7.89...8.....51...4.....8....2..9..9..4.6..3...12.....287..4....5..3..',
+'..34.6....5....2.....3.7.1......5....3..9.6....6.128.........6.6.....1..782....9.',
+'.2......945....2.6..8...1....95.34..........8..6..8....7196.852...3...7...2.7.6..',
+'1.34...8...71.9..6.8..72.......9.3.85...........537..2........57...15...89....61.',
+'1.34...89.5..89...6...3..........86....9..5.2....6....532..1.....4..56..9..8..1.4',
+'12.4....9..6....2....2.......56.3..8..1.2.45.8.....2.....3.4......1.5.9.93......7',
+'12.4....94.71..2......3........1..7..8...56.4.65...91.51...3.......9.46.....6...3',
+'.2345.....571.9..6...........4...6.......2.488.9..1.7....2...1.7.........1.538...',
+'..3..6.8.45.....3..7.2..5642481..3........24.6............9...7...84..5..3.5.....',
+'...4...8...6..9.3.7...13...2.....6.....6.1.75.7.........2..79.......5.13.318...6.',
+'....5.......1...36689........1843..7..59...64.9....3..5.......2....3..9..4.6.8...',
+'...45..894..1...36.....3..............58....3816..7.943.8....6...1..8..294.7.....',
+'..34....94...8....7.....6..26...7..5..4.....3...1..8...1.56..2....9..376..2.7....',
+'..3..6...4...8.2.....7...4.....1..7..368......9...3.5...2...4..8...4...791..6....',
+'.2.4..789.....9...7...235..24..619...9.....1.....9...43.....4..5..21.....1.....7.',
+'...45.7.......9...6...37..52...7.6....53..1.8.8.....72..98...4154.....6...6......',
+'...4567...5...9...6....7..12...6.3..8.6....12...31....3...7.89...4.......9.....6.',
+'12.45.7.....1.9..66...73....6..378.153....427..........1...8...7.....3.5.4.......',
+'.234.6...4..1....6....2......47..65..1.....7.........4.6.9...278......91.75..3...',
+'...456.....7.8..63.8.......2.5..1.7..4.96........75..4.6....9.85..........8.3.61.',
+'...4.....4.67...2.7...3..4...7.6..988.52.4....6.......3.....8.2.7..1..3...832..71',
+'1........4..18.2.6.......54.9..7.....768459..8.....5....9..287.6...9.4...8.......',
+'1...567........2..96.7..15....3......79..8...8....7....1.59.84.5.....3.17.......5',
+'.....6.89.....91.378..3.....3....8.6..15.3...945.........62...8....1.........724.',
+'1.........57..9.6.6....7..42....417.........8.8153....34.9....7......4....62.5.3.',
+'12.....8...6..9......2.36...1..943....4......9..1...2.3..84..97..7.....8.41.7.2..',
+'1.3.5...94......3..8..1.4...1.87..9...7..4....3.2.........6.9...6.9..3.5...52..64',
+'...........718.2.668..2...42.45..9...1......7...34...53.......1.4.....9...126.4..',
+'..34..7..45...9..66.....15.....6..97......4..9.67....137.....18.6...1.....42.....',
+'1......89.57......8..2...5...5..39.1.1...4....6.51.......3..62.64..9...37........',
+'.2345.....5.....3.7.9...........8..6....1......532..1.......9...4.1...2.9....7..8',
+'..3.5......67.9...7..2.......5.....46....8.2..1....3......4...1.....2.9.8..6..27.',
+'.2....7....71...366...7..1..4.5.......6.1.3.......4..8...9.8.5...2.3.6..9.......3',
+'.23....8.4...8.1....8..3..42....4.3...79.............53..6.1.4.8....2.1..6.......',
+'.....67...5......37...3..45.6..7.3....9.......7..634....28............1..3..4.5..',
+'.2...6.8.4..........93..1..2......7...5.....1.7.6.4.2.....9.3.....5.....8....2.6.',
+'..345.7..4..7......9...1...2...4.3..........8.6...3.1.5..3..2.........9..4...8..6',
+'..3.5....4....9..6...2...4..8.....94...5...717....46....2........83....79....1.6.',
+'.2.4....9....8......8..31......653....6..8.1....7....4..5.1.6..7......2.9........',
+'1......8...7..9....6..3...5.3..6.4.....5..3.29....3.7.3.8..1.............4..2...3',
+'1.......9.57..9....8.....5....64.3..8....7.....45....2...2....4....3.6..7....5.1.',
+'.234.........8...36.....4.......5..6..19...3.....7.8...19....2.5.......7.4.3...9.',
+'.2.4...8.....8...68....71..2..5...9..95.......4..3.........1..7..28...4.....6.3..'];
+function newGame(L){level=L||level;if(level>80){g=[...XL[level-81]].map(c=>c==='.'?0:+c);sol=g.slice();fill(sol)}else{let sd=level*7919+13;rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};sol=Array(81).fill(0);fill(sol);g=sol.slice();let rem=0;const T=30+Math.round((level-1)*26/79);
+ for(const i of shuf([...Array(81).keys()])){if(rem>=T)break;const v=g[i];g[i]=0;if(count(g,2)===1)rem++;else g[i]=v}}
  given=g.map(v=>v>0);notes=Array(81).fill(0);hist=[];sel=-1;won=false;checkShown=false;$('#win').hidden=true;rnd=Math.random;showScr('');render()}
 function snap(){hist.push({g:g.slice(),n:notes.slice()});if(hist.length>150)hist.shift()}
 function burstDots(i){
@@ -302,7 +386,7 @@ function render(){let bad=0,full=true,wrongCount=0;
  for(let i=0;i<81;i++){const c=els[i],v=g[i],b=v&&P[i].some(p=>g[p]===v),wrong=!!(checkShown&&v&&!given[i]&&Array.isArray(sol)&&sol.length===81&&v!==sol[i]);if(!v)full=false;if(b)bad++;if(wrong)wrongCount++;
   c.className='cell'+(sel>=0&&P[sel].includes(i)?' pe':'')+(i===sel?' se':'')+(given[i]?' given':'')+(b?' bad':'')+(wrong?' wrong-answer':'');
   if(v)c.innerHTML=ball(v);else if(notes[i]){let h='<div class="notes">';for(let k=1;k<=9;k++)h+=notes[i]>>k&1?`<i style="--c:${C[k-1][0]}"></i>`:'<i style="visibility:hidden"></i>';c.innerHTML=h+'</div>'}else c.innerHTML=''}
- if(full&&!bad&&!won){won=true;done[level]=1;$('#win').hidden=false;$('#next').hidden=level>=80}
+ if(full&&!bad&&!won){won=true;done[level]=1;$('#win').hidden=false;$('#next').hidden=level>=160}
  $('#lvl').innerHTML=`Level ${level}<small>${tier(level)}</small>`;drawDock();$('#check').textContent=checkShown?'Hide check':'Check';document.body.classList.toggle('checking',checkShown);$('#cap').textContent=checkShown?(wrongCount?`${wrongCount} ball${wrongCount===1?' is':'s are'} in the wrong spot, circled in red.`:'No incorrect placements found. Every filled ball matches the solution so far.') : capDefault;try{localStorage.setItem('cku',JSON.stringify({g,given,notes,sol,level,done}))}catch(e){}}
 
 function closePick(){pk=null;pickEl.hidden=true;$('#back').hidden=true}
@@ -343,9 +427,9 @@ $('#check').onclick=()=>{
 // the champion screen shows once; leaving the title screen marks it as seen
 let champ=false;try{champ=localStorage.getItem('ckuChampSeen')!=='1'}catch(e){}
 function leaveIntro(n){if(champ){try{localStorage.setItem('ckuChampSeen','1')}catch(e){}}showScr(n)}
-const tier=l=>l<=20?'Easy':l<=40?'Medium':l<=60?'Hard':'Expert',TC={Easy:'#4cd964',Medium:'#ffd23f',Hard:'#ff9500',Expert:'#ff3b30'};
+const tier=l=>l<=20?'Easy':l<=40?'Medium':l<=60?'Hard':l<=80?'Expert':l<=100?'Master':l<=120?'Grandmaster':l<=140?'Legend':'Impossible',TC={Easy:'#4cd964',Medium:'#ffd23f',Hard:'#ff9500',Expert:'#ff3b30',Master:'#bf5af2',Grandmaster:'#5ac8fa',Legend:'#ff2d95',Impossible:'#f5f5f7'};
 function showScr(n){$('#intro').hidden=n!=='intro';$('#levels').hidden=n!=='levels';if(n==='levels')buildLevels()}
-function buildLevels(){let h='';for(let n=1;n<=80;n++)h+=`<button class="lv${n===level?' cur':''}" data-n="${n}" style="--t:${TC[tier(n)]}">${n}${done[n]?'<em>✓</em>':''}</button>`;$('#lg').innerHTML=h}
+function buildLevels(){let h='';for(let n=1;n<=160;n++)h+=`<button class="lv${n===level?' cur':''}" data-n="${n}" style="--t:${TC[tier(n)]}">${n}${done[n]?'<em>✓</em>':''}</button>`;$('#lg').innerHTML=h}
 $('#lg').onclick=e=>{const b=e.target.closest('.lv');if(b)newGame(+b.dataset.n)};
 $('#home').onclick=()=>showScr('levels');$('#back2').onclick=()=>showScr('');$('#play').onclick=()=>leaveIntro('');$('#toLv').onclick=()=>leaveIntro('levels');
 $('#next').onclick=()=>newGame(level+1);$('#again').onclick=()=>showScr('levels');
@@ -353,7 +437,7 @@ function applyConf(){document.body.classList.toggle('noconf',!conf);$('#cfl').te
 $('#cfl').onclick=()=>{conf=!conf;applyConf()};
 (function(){const sh=$('#shapes');for(let i=0;i<26;i++){const e=document.createElement('i'),s=3+(Math.random()*4|0)*2;e.className='sh t'+i%3;e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--c:${C[i%9][0]};width:${s}px;height:${s}px;animation-delay:${-Math.random()*5}s`;sh.appendChild(e)}
 $('#logo').innerHTML='COLORKU'.split('').map((l,k)=>`<span style="--c:${C[[0,1,2,4,5,6,8][k]][0]};--k:${k}">${l}</span>`).join('');
-let r='';for(let k=0;k<9;k++)r+=`<div class="rb" data-k="${k}" style="--k:${k};top:calc(8% + ${k*10.5}%);--rx:calc(60px + ${k*7}px)">${ball(k+1)}</div>`;$('#roll').innerHTML=r;$('#roll').querySelectorAll('.rb').forEach(e=>e.addEventListener('animationend',ev=>{if(ev.target===e&&ev.animationName==='roll'){e.style.top='';e.classList.add('swirling');e.style.animationDelay='-'+(Number(e.dataset.k)*.53)+'s'}}));const J=['NO QUARTERS NEEDED.','SAVE THE TRADITIONAL VERSION FOR SHABBAT.','WARNING: CAUSES "JUST ONE MORE LEVEL"',"IT'S SUDOKU BUT WITH VIBES",'80 LEVELS. ZERO CHILL.','NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.','THE BALLS ARE NOT EDIBLE. WE CHECKED.',"TAPPING HARDER DOESN'T HELP. WE TRIED."];if(champ){J.splice(J.indexOf('NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.'),1);J.unshift('CONGRATULATIONS YAIRA! YOU BEAT LEVEL 80!','NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.','EXPERT MODE: COMPLETELY DEMOLISHED.','THE BALLS BOW BEFORE YOU.');$('#intro').classList.add('champ');$('#hud').innerHTML='<span>1UP 080/080</span><span>HI-SCORE: YAIRA</span>';$('#coin').textContent='★ CHAMPION ★';$('#medal').innerHTML=[1,2,3,4,5,6,7,8,9].map(ball).join('');let h='';for(let k=0;k<40;k++)h+=`<i style="left:${Math.random()*100}%;--c:${C[k%9][0]};animation-duration:${3+Math.random()*4}s;animation-delay:${-Math.random()*7}s"></i>`;$('#confetti').innerHTML=h}const sb=$('#sub');let ji=0;const sj=()=>{sb.textContent=J[ji++%J.length]};sj();setInterval(sj,2800);let cc=0;$('#coin').onclick=()=>{cc++;$('#cr').textContent='CREDITS '+String(cc).padStart(2,'0');$('#coin').textContent=cc<2?'CREDIT ACCEPTED!':cc<5?'INSERT MORE COIN':cc<8?"OKAY STOP. IT'S FREE.":"YOU'RE JUST TAPPING NOW.";if(cc>=88){$('#intro').classList.add('torah-mode');$('#cr').style.color='#ff3030';$('#hud').style.color='#ff3030';$('#hud').querySelectorAll('span').forEach(s=>s.style.color='#ff3030')}}})();
+let r='';for(let k=0;k<9;k++)r+=`<div class="rb" data-k="${k}" style="--k:${k};top:calc(8% + ${k*10.5}%);--rx:calc(60px + ${k*7}px)">${ball(k+1)}</div>`;$('#roll').innerHTML=r;$('#roll').querySelectorAll('.rb').forEach(e=>e.addEventListener('animationend',ev=>{if(ev.target===e&&ev.animationName==='roll'){e.style.top='';e.classList.add('swirling');e.style.animationDelay='-'+(Number(e.dataset.k)*.53)+'s'}}));const J=['NO QUARTERS NEEDED.','SAVE THE TRADITIONAL VERSION FOR SHABBAT.','WARNING: CAUSES "JUST ONE MORE LEVEL"',"IT'S SUDOKU BUT WITH VIBES",'160 LEVELS. ZERO CHILL.','NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.','THE BALLS ARE NOT EDIBLE. WE CHECKED.',"TAPPING HARDER DOESN'T HELP. WE TRIED."];if(champ){J.splice(J.indexOf('NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.'),1);J.unshift('CONGRATULATIONS YAIRA! YOU BEAT LEVEL 80!','NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.','EXPERT MODE: COMPLETELY DEMOLISHED.','THE BALLS BOW BEFORE YOU.');$('#intro').classList.add('champ');$('#hud').innerHTML='<span>1UP 080/160</span><span>HI-SCORE: YAIRA</span>';$('#coin').textContent='★ CHAMPION ★';$('#medal').innerHTML=[1,2,3,4,5,6,7,8,9].map(ball).join('');let h='';for(let k=0;k<40;k++)h+=`<i style="left:${Math.random()*100}%;--c:${C[k%9][0]};animation-duration:${3+Math.random()*4}s;animation-delay:${-Math.random()*7}s"></i>`;$('#confetti').innerHTML=h}const sb=$('#sub');let ji=0;const sj=()=>{sb.textContent=J[ji++%J.length]};sj();setInterval(sj,2800);let cc=0;$('#coin').onclick=()=>{cc++;$('#cr').textContent='CREDITS '+String(cc).padStart(2,'0');$('#coin').textContent=cc<2?'CREDIT ACCEPTED!':cc<5?'INSERT MORE COIN':cc<8?"OKAY STOP. IT'S FREE.":"YOU'RE JUST TAPPING NOW.";if(cc>=88){$('#intro').classList.add('torah-mode');$('#cr').style.color='#ff3030';$('#hud').style.color='#ff3030';$('#hud').querySelectorAll('span').forEach(s=>s.style.color='#ff3030')}}})();
 try{conf=localStorage.getItem('ckuConf')!=='0'}catch(e){}applyConf();
 try{const s=JSON.parse(localStorage.getItem('cku'));if(s&&s.g&&s.level){g=s.g;given=s.given;notes=s.notes;sol=s.sol;level=s.level;done=s.done||{};render()}else newGame(1)}catch(e){newGame(1)}
 showScr('intro');
