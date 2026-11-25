@@ -162,6 +162,19 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 .labHint{font-size:10px;color:#bfa487;text-align:center;margin:0}
 @media(max-height:700px){#lab{gap:9px;padding-top:calc(env(safe-area-inset-top,0px) + 10px)}#labBoard{width:min(100%,270px)}}
 @media(prefers-reduced-motion:reduce){#lab,#labShade{transition:none}}
+/* one-time champion title screen (after beating level 80) */
+#banner{font-size:10px;color:#ffd23f;letter-spacing:1px;text-shadow:2px 2px 0 #ff2d95;background:rgba(5,3,15,.85);padding:6px 8px;border:2px solid #ffd23f;z-index:2;animation:fade .6s ease 1.8s backwards}
+#banner b{color:#fff;animation:bl .8s steps(2) infinite}
+#medal{z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:7px;width:84px;background:#05030f;border:3px solid #ffd23f;box-shadow:4px 4px 0 #ff2d95,0 0 22px rgba(255,210,63,.55);position:relative;animation:pop .5s steps(4) 2.2s backwards}
+#medal .ball{width:100%}
+#medal::after{content:"LV 80";position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);background:#ffd23f;color:#05030f;font-size:7px;padding:3px 5px;white-space:nowrap}
+#confetti{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+#confetti i{position:absolute;top:-12px;width:6px;height:6px;background:var(--c);animation:cf linear infinite}
+@keyframes cf{to{transform:translateY(110vh) rotate(720deg)}}
+@media(prefers-reduced-motion:reduce){#confetti{display:none}}
+#intro.champ #coin{color:#ffd23f}
+#intro:not(.champ) #banner,#intro:not(.champ) #medal,#intro:not(.champ) #confetti{display:none}
+#intro.torah-mode #banner,#intro.torah-mode #medal,#intro.torah-mode #confetti{display:none!important}
 </style></head><body>
 <header><button class="btn" id="home">Levels</button><div id="lvl"></div><button class="btn labLaunch" id="labOpenBtn" aria-label="Open Combination Lab">✦ Lab</button><button class="btn" id="cfl">Conflicts: On</button></header>
 <div id="board"><div id="grid"></div></div>
@@ -186,7 +199,7 @@ header #lvl{display:block;text-align:center;font-weight:700;line-height:1.15}
 
 <div id="win" hidden><h2>Solved! 🎉</h2><button class="btn" id="next">Next level</button><button class="btn" id="again">Levels</button></div>
 <div id="levels" class="scr" hidden><h2>Choose a level</h2><p>Level 1 is the easiest. Level 80 is the hardest.<br>The higher the number, the fewer starting balls.</p><div id="leg"><span style="--t:#4cd964">1–20 Easy</span><span style="--t:#ffd23f">21–40 Medium</span><span style="--t:#ff9500">41–60 Hard</span><span style="--t:#ff3b30">61–80 Expert</span></div><div id="lg"></div><button class="btn" id="back2">Back to game</button></div>
-<div id="intro" class="scr"><div id="floor"></div><div id="shapes"></div><div id="roll"></div><div id="hud"><span>1UP 000000</span><span>HI-SCORE 999999</span></div><div id="logo"></div><div id="sub"></div><div id="coin">INSERT COIN</div><div id="cr">CREDITS 00</div><button class="big" id="play">PRESS START</button><button class="btn" id="toLv">LEVEL SELECT</button><div id="foot">Fangame By 3redon<br><span style="font-size:7px">Made for Yaira</span></div><div id="torah-easter"><div class="message">88 CREDITS?! MY FRIEND, YOU HAVE OFFICIALLY RUN OUT OF EXCUSES.<br><br>THAT'S A LOT OF TIME TO SPEND CLICKING VIRTUAL COINS. GO DO SOMETHING PRODUCTIVE — LEARN SOME TORAH!</div><a href="https://www.chabad.org/" target="_blank" rel="noopener noreferrer">CLICK HERE TO LEARN TORAH AT CHABAD.ORG</a></div></div>
+<div id="intro" class="scr"><div id="floor"></div><div id="shapes"></div><div id="roll"></div><div id="hud"><span>1UP 000000</span><span>HI-SCORE 999999</span></div><div id="confetti"></div><div id="banner"><b>★</b> ALL 80 LEVELS CLEARED <b>★</b></div><div id="logo"></div><div id="medal"></div><div id="sub"></div><div id="coin">INSERT COIN</div><div id="cr">CREDITS 00</div><button class="big" id="play">PRESS START</button><button class="btn" id="toLv">LEVEL SELECT</button><div id="foot">Fangame By 3redon<br><span style="font-size:7px">Made for Yaira</span></div><div id="torah-easter"><div class="message">88 CREDITS?! MY FRIEND, YOU HAVE OFFICIALLY RUN OUT OF EXCUSES.<br><br>THAT'S A LOT OF TIME TO SPEND CLICKING VIRTUAL COINS. GO DO SOMETHING PRODUCTIVE — LEARN SOME TORAH!</div><a href="https://www.chabad.org/" target="_blank" rel="noopener noreferrer">CLICK HERE TO LEARN TORAH AT CHABAD.ORG</a></div></div>
 <script>
 const $=s=>document.querySelector(s);
 const C=[['#e8262c','#8a0d12'],['#f7931e','#a8520a'],['#f7e017','#a38c05'],['#a6d632','#5d8a10'],['#139a4a','#064a22'],['#7cc4f0','#3a7fb0'],['#2a5ae0','#0f2a85'],['#e4aaf0','#a566b8'],['#7a2fa3','#3c0f58']];
@@ -327,17 +340,20 @@ $('#check').onclick=()=>{
  }
  render();
 };
+// the champion screen shows once; leaving the title screen marks it as seen
+let champ=false;try{champ=localStorage.getItem('ckuChampSeen')!=='1'}catch(e){}
+function leaveIntro(n){if(champ){try{localStorage.setItem('ckuChampSeen','1')}catch(e){}}showScr(n)}
 const tier=l=>l<=20?'Easy':l<=40?'Medium':l<=60?'Hard':'Expert',TC={Easy:'#4cd964',Medium:'#ffd23f',Hard:'#ff9500',Expert:'#ff3b30'};
 function showScr(n){$('#intro').hidden=n!=='intro';$('#levels').hidden=n!=='levels';if(n==='levels')buildLevels()}
 function buildLevels(){let h='';for(let n=1;n<=80;n++)h+=`<button class="lv${n===level?' cur':''}" data-n="${n}" style="--t:${TC[tier(n)]}">${n}${done[n]?'<em>✓</em>':''}</button>`;$('#lg').innerHTML=h}
 $('#lg').onclick=e=>{const b=e.target.closest('.lv');if(b)newGame(+b.dataset.n)};
-$('#home').onclick=()=>showScr('levels');$('#back2').onclick=()=>showScr('');$('#play').onclick=()=>showScr('');$('#toLv').onclick=()=>showScr('levels');
+$('#home').onclick=()=>showScr('levels');$('#back2').onclick=()=>showScr('');$('#play').onclick=()=>leaveIntro('');$('#toLv').onclick=()=>leaveIntro('levels');
 $('#next').onclick=()=>newGame(level+1);$('#again').onclick=()=>showScr('levels');
 function applyConf(){document.body.classList.toggle('noconf',!conf);$('#cfl').textContent='Conflicts: '+(conf?'On':'Off');try{localStorage.setItem('ckuConf',conf?'1':'0')}catch(e){}}
 $('#cfl').onclick=()=>{conf=!conf;applyConf()};
 (function(){const sh=$('#shapes');for(let i=0;i<26;i++){const e=document.createElement('i'),s=3+(Math.random()*4|0)*2;e.className='sh t'+i%3;e.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--c:${C[i%9][0]};width:${s}px;height:${s}px;animation-delay:${-Math.random()*5}s`;sh.appendChild(e)}
 $('#logo').innerHTML='COLORKU'.split('').map((l,k)=>`<span style="--c:${C[[0,1,2,4,5,6,8][k]][0]};--k:${k}">${l}</span>`).join('');
-let r='';for(let k=0;k<9;k++)r+=`<div class="rb" data-k="${k}" style="--k:${k};top:calc(8% + ${k*10.5}%);--rx:calc(60px + ${k*7}px)">${ball(k+1)}</div>`;$('#roll').innerHTML=r;$('#roll').querySelectorAll('.rb').forEach(e=>e.addEventListener('animationend',ev=>{if(ev.target===e&&ev.animationName==='roll'){e.style.top='';e.classList.add('swirling');e.style.animationDelay='-'+(Number(e.dataset.k)*.53)+'s'}}));const J=['NO QUARTERS NEEDED.','SAVE THE TRADITIONAL VERSION FOR SHABBAT.','WARNING: CAUSES "JUST ONE MORE LEVEL"',"IT'S SUDOKU BUT WITH VIBES",'80 LEVELS. ZERO CHILL.','NOBODY HAS BEATEN LEVEL 80. NOBODY HAS TRIED.','THE BALLS ARE NOT EDIBLE. WE CHECKED.',"TAPPING HARDER DOESN'T HELP. WE TRIED."],sb=$('#sub');let ji=0;const sj=()=>{sb.textContent=J[ji++%J.length]};sj();setInterval(sj,2800);let cc=0;$('#coin').onclick=()=>{cc++;$('#cr').textContent='CREDITS '+String(cc).padStart(2,'0');$('#coin').textContent=cc<2?'CREDIT ACCEPTED!':cc<5?'INSERT MORE COIN':cc<8?"OKAY STOP. IT'S FREE.":"YOU'RE JUST TAPPING NOW.";if(cc>=88){$('#intro').classList.add('torah-mode');$('#cr').style.color='#ff3030';$('#hud').style.color='#ff3030';$('#hud').querySelectorAll('span').forEach(s=>s.style.color='#ff3030')}}})();
+let r='';for(let k=0;k<9;k++)r+=`<div class="rb" data-k="${k}" style="--k:${k};top:calc(8% + ${k*10.5}%);--rx:calc(60px + ${k*7}px)">${ball(k+1)}</div>`;$('#roll').innerHTML=r;$('#roll').querySelectorAll('.rb').forEach(e=>e.addEventListener('animationend',ev=>{if(ev.target===e&&ev.animationName==='roll'){e.style.top='';e.classList.add('swirling');e.style.animationDelay='-'+(Number(e.dataset.k)*.53)+'s'}}));const J=['NO QUARTERS NEEDED.','SAVE THE TRADITIONAL VERSION FOR SHABBAT.','WARNING: CAUSES "JUST ONE MORE LEVEL"',"IT'S SUDOKU BUT WITH VIBES",'80 LEVELS. ZERO CHILL.','NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.','THE BALLS ARE NOT EDIBLE. WE CHECKED.',"TAPPING HARDER DOESN'T HELP. WE TRIED."];if(champ){J.splice(J.indexOf('NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.'),1);J.unshift('CONGRATULATIONS YAIRA! YOU BEAT LEVEL 80!','NOBODY HAD BEATEN LEVEL 80. THEN YOU DID.','EXPERT MODE: COMPLETELY DEMOLISHED.','THE BALLS BOW BEFORE YOU.');$('#intro').classList.add('champ');$('#hud').innerHTML='<span>1UP 080/080</span><span>HI-SCORE: YAIRA</span>';$('#coin').textContent='★ CHAMPION ★';$('#medal').innerHTML=[1,2,3,4,5,6,7,8,9].map(ball).join('');let h='';for(let k=0;k<40;k++)h+=`<i style="left:${Math.random()*100}%;--c:${C[k%9][0]};animation-duration:${3+Math.random()*4}s;animation-delay:${-Math.random()*7}s"></i>`;$('#confetti').innerHTML=h}const sb=$('#sub');let ji=0;const sj=()=>{sb.textContent=J[ji++%J.length]};sj();setInterval(sj,2800);let cc=0;$('#coin').onclick=()=>{cc++;$('#cr').textContent='CREDITS '+String(cc).padStart(2,'0');$('#coin').textContent=cc<2?'CREDIT ACCEPTED!':cc<5?'INSERT MORE COIN':cc<8?"OKAY STOP. IT'S FREE.":"YOU'RE JUST TAPPING NOW.";if(cc>=88){$('#intro').classList.add('torah-mode');$('#cr').style.color='#ff3030';$('#hud').style.color='#ff3030';$('#hud').querySelectorAll('span').forEach(s=>s.style.color='#ff3030')}}})();
 try{conf=localStorage.getItem('ckuConf')!=='0'}catch(e){}applyConf();
 try{const s=JSON.parse(localStorage.getItem('cku'));if(s&&s.g&&s.level){g=s.g;given=s.given;notes=s.notes;sol=s.sol;level=s.level;done=s.done||{};render()}else newGame(1)}catch(e){newGame(1)}
 showScr('intro');
